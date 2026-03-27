@@ -26,6 +26,9 @@ struct ContentView: View {
                 Circle()
                     .scale(1.7)
                     .foregroundStyle(.white.opacity(0.15))
+                Circle()
+                    .scale(1.35)
+                    .foregroundStyle(.white)
             }
         }
         .navigationBarHidden(true)
