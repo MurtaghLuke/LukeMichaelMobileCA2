@@ -33,3 +33,7 @@ struct LocationDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
+
+#Preview {
+    LocationDetailView(location: Location(name: "Preview", imageName: "cliffs"))
+}
