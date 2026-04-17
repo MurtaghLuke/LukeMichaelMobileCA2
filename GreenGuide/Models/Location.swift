@@ -10,5 +10,9 @@ import Foundation
 struct Location: Identifiable{
     let id = UUID()
     let name: String
-    let imageName: String
+    let latitude: Double
+    let longitude: Double
+    let county: String
+    let imageURL: String
+    let tags: String
 }
