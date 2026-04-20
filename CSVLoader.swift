@@ -9,6 +9,8 @@ import Foundation
 
 class CSVLoader {
     static func loadLocations()->[Location] {
+        
+
 
         //find csv
         guard let fileURL = Bundle.main.url(forResource: "Attractions", withExtension: "csv") else {
@@ -24,57 +26,60 @@ class CSVLoader {
               let data = try String(contentsOf: fileURL, encoding: .utf8)
               // Split the file into rows with newline characters
               let rows = data.components(separatedBy: "\n")
-              //Skip the first row and loop through rest
-              for row in rows.dropFirst() {
 
-                  // Split each row into columns
-                  let columns = row.components(separatedBy: "\t")
+            
+            for row in rows.dropFirst() {
 
-                  // make sure row has enough columns before using data
-                  if columns.count >= 9 {
+                let columns = row.components(separatedBy: ",")
 
-                      
-                      // get values from each column
-                      let name = columns[0]
-                      let latitude = Double(columns[3]) ?? 0.0
-                      let longitude = Double(columns[4]) ?? 0.0
-                      let county = columns[6]
-                      let imageURL = columns[7]
-                      let tags = columns[8]
+                if columns.count >= 9 {
 
-                      
-                      //filter only outdoor/nature locations
-                      if tags.lowercased().contains("outdoor") ||
-                         tags.lowercased().contains("nature") ||
-                         tags.lowercased().contains("walking") {
+                    let name = columns[0].replacingOccurrences(of: "\"", with: "")
+                    let latitude = Double(columns[3].replacingOccurrences(of: "\"", with: "")) ?? 0.0
+                    let longitude = Double(columns[4].replacingOccurrences(of: "\"", with: "")) ?? 0.0
+                    let county = columns[6].replacingOccurrences(of: "\"", with: "")
+                    let imageURL = columns[7]
+                        .replacingOccurrences(of: "\"", with: "")
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                    let tags = columns[8].replacingOccurrences(of: "\"", with: "")
 
-                          // Create a Location object with the extracted data
-                          let location = Location(
-                              name: name,
-                              latitude: latitude,
-                              longitude: longitude,
-                              county: county,
-                              imageURL: imageURL,
-                              tags: tags
-                          )
+                    let cleanTags = tags.lowercased()
 
-                          //// Add the location to the array
-                          locations.append(location)
-                      }
-                  }
-              }
+                    // only keep nature/outdoor attractions
+                    if cleanTags.contains("outdoor") ||
+                       cleanTags.contains("nature") ||
+                       cleanTags.contains("walk") ||
+                       cleanTags.contains("trail") {
+
+                    // skip bad urls
+                    if !imageURL.starts(with: "http") {
+                        continue
+                    }
+                        
+                        let location = Location(
+                            name: name,
+                            latitude: latitude,
+                            longitude: longitude,
+                            county: county,
+                            imageURL: imageURL,
+                            tags: tags
+                        )
+
+                        locations.append(location)
+                    }
+                }
+            }
 
             
             
           } catch {
-              // Handle errors (e.g. file not readable)
               print("Error reading CSV file: \(error)")
           }
 
         
 
         
-        return locations
+        return Array(locations.prefix(200))
     }
 }
 
