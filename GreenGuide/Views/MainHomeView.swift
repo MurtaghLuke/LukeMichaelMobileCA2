@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct MainHomeView: View {
-//sample locations
-    let locations = [
-        Location(name: "Cliffs of Moher", imageName: "x"),
-        Location(name: "Benbulben", imageName: "x"),
-        Location(name: "Glendalough", imageName: "x")]
+    
+    @State private var locations: [Location] = []
+
+    
+    //sample locations
+ 
 
     var body: some View {
         NavigationView {

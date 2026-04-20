@@ -5,12 +5,18 @@ struct LocationCardView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Image(location.imageName)
-                .resizable()
-                .scaledToFill()
-                .frame(height: 180)
-                .clipped()
-
+            
+            AsyncImage(url: URL(string: location.imageURL)) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                ProgressView()
+            }
+            .frame(height: 180)
+            .clipped()
+            
+            
             Text(location.name)
                 .font(.headline)
                 .padding()

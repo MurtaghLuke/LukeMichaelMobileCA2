@@ -8,23 +8,31 @@
 import SwiftUI
 
 struct LocationDetailView: View {
+    // gets the selected location from the last screen.
     let location: Location
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
 
-                Image(location.imageName)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 250)
-                    .clipped()
+                // AsyncImage loads image from a URL
+                AsyncImage(url: URL(string: location.imageURL)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    //shows when image is loading
+                    ProgressView()
+                }
+                .frame(height: 250)
+                .clipped()
 
+
+                
                 Text(location.name)
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding()
-                
                 Text("Description for location here")
                     .padding(.horizontal)
             }
@@ -32,8 +40,4 @@ struct LocationDetailView: View {
         .navigationTitle(location.name)
         .navigationBarTitleDisplayMode(.inline)
     }
-}
-
-#Preview {
-    LocationDetailView(location: Location(name: "Preview", imageName: "cliffs"))
 }
