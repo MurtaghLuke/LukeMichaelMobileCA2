@@ -30,8 +30,11 @@ class CSVLoader {
             
             for row in rows.dropFirst() {
 
-                let columns = row.components(separatedBy: ",")
-
+                //update to split only on commas outside quotes
+                let columns = row.components(separatedBy: ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
+                    .map { $0.replacingOccurrences(of: "\"", with: "") }
+                
+                
                 if columns.count >= 9 {
 
                     let name = columns[0].replacingOccurrences(of: "\"", with: "")
@@ -46,10 +49,7 @@ class CSVLoader {
                     let cleanTags = tags.lowercased()
 
                     // only keep nature/outdoor attractions
-                    if cleanTags.contains("outdoor") ||
-                       cleanTags.contains("nature") ||
-                       cleanTags.contains("walk") ||
-                       cleanTags.contains("trail") {
+                    if true{
 
                     // skip bad urls
                     if !imageURL.starts(with: "http") {
@@ -80,7 +80,7 @@ class CSVLoader {
 
         
 
-        
+        print("Loaded locations: \(locations.count)")
         return Array(locations.prefix(200))
     }
 }
