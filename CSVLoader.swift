@@ -8,7 +8,7 @@
 import Foundation
 
 class CSVLoader {
-    static func loadLocations()->[Location] {
+    static func loadLocations()->[GreenLocation] {
         
 
 
@@ -18,7 +18,7 @@ class CSVLoader {
             return []
         }
 
-        var locations: [Location] = []
+        var locations: [GreenLocation] = []
 
         
         do {
@@ -56,13 +56,15 @@ class CSVLoader {
                         continue
                     }
                         
-                        let location = Location(
-                            name: name,
-                            latitude: latitude,
-                            longitude: longitude,
+                        let location = GreenLocation(
+                            id: UUID().uuidString,
+                            title: name,
                             county: county,
+                            category: "Outdoor",
                             imageURL: imageURL,
-                            tags: tags
+                            rating: "4.5", //placeholder (CSV doesn’t have it)
+                            description: "Outdoor location in \(county).", //csv doesnt have
+                            highlights: tags.components(separatedBy: " ") //csv doesnt have
                         )
 
                         locations.append(location)
