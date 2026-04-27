@@ -11,7 +11,7 @@ import SwiftUI
 struct GreenGuideApp: App {
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            ContentView()
         }
         //enables swift data for app
         .modelContainer(for: Location.self)

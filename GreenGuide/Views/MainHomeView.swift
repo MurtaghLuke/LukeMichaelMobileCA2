@@ -4,82 +4,109 @@
 //
 //  Created by Student on 17/04/2026.
 //
-import SwiftData
+
 import SwiftUI
 
 struct MainHomeView: View {
-    //sores locations loaded from csv
-    @State private var locations: [Location] = []
+    @EnvironmentObject var favouriteManager: FavouriteManager
 
-    
-    @Environment(\.modelContext) private var context
-    // automatically fetches all Location objects from SwiftData
-    @Query private var storedLocations: [Location]
+    let categories = [
+        ("Cottages", "house.fill"),
+        ("Castles", "building.columns.fill"),
+        ("Coastal", "water.waves"),
+        ("County", "map.fill"),
+        ("Dublin", "building.2.fill")
+    ]
 
     
     var body: some View {
-        Text("Locations count: \(storedLocations.count)")
-
-        NavigationView {
+        
+        NavigationStack {
             ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    header
+                    searchBar
+                    categoryRow
 
-                VStack {
+                    Text("Featured Places")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .padding(.horizontal)
 
-                    if storedLocations.isEmpty {
-                        VStack {
-                            ProgressView()
-                            Text("Loading locations...")
+                    ForEach(sampleLocations) { location in
+                        NavigationLink {
+                            LocationDetailView(location: location)
+                                .environmentObject(favouriteManager)
+                        } label: {
+                            LocationCardView(location: location)
                         }
-                    } else {
-                        ForEach(storedLocations) { location in
-                            NavigationLink(destination: LocationDetailView(location: location)) {
-                                LocationCardView(location: location)
-                            }
-                        }
+                        .buttonStyle(.plain)
                     }
-
                 }
+                .padding(.top, 20)
             }
-            .onAppear {
-                
-                //force reset once
-                UserDefaults.standard.set(false, forKey: "hasLoadedData")
+            .background(Color(.systemGroupedBackground))
+        }
+    }
 
-                let hasLoaded = UserDefaults.standard.bool(forKey: "hasLoadedData")
+    private var header: some View {
+        HStack {
+            Text("Greenguide")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.green)
 
+            Spacer()
 
-                    // Only load CSV ONCE
-                    if !hasLoaded {
+            Image(systemName: "mappin.circle")
+                .font(.title)
+                .foregroundColor(.gray)
+        }
+        .padding(.horizontal)
+    }
 
-                        print("Loading CSV data...")
+    private var searchBar: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.gray)
 
-                        let csvLocations = CSVLoader.loadLocations()
-                        print("CSV returned: \(csvLocations.count)")
+            Text("Where are you going?")
+                .foregroundColor(.gray)
 
+            Spacer()
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(22)
+        .padding(.horizontal)
+    }
 
-                        for loc in csvLocations {
-                            let newLocation = Location(
-                                name: loc.name,
-                                latitude: loc.latitude,
-                                longitude: loc.longitude,
-                                county: loc.county,
-                                imageURL: loc.imageURL,
-                                tags: loc.tags
+    private var categoryRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 22) {
+                ForEach(categories, id: \.0) { category in
+                    VStack(spacing: 8) {
+                        Circle()
+                            .fill(Color.gray.opacity(0.12))
+                            .frame(width: 62, height: 62)
+                            .overlay(
+                                Image(systemName: category.1)
+                                    .font(.title2)
+                                    .foregroundColor(.green)
                             )
 
-                            context.insert(newLocation)
-                        }
-
-
-                        UserDefaults.standard.set(true, forKey: "hasLoadedData")
-
+                        Text(category.0)
+                            .font(.caption)
+                            .foregroundColor(.black)
+                    }
                 }
             }
-            
-            
-            
-
+            .padding(.horizontal)
         }
     }
 }
 
+#Preview {
+    MainHomeView()
+        .environmentObject(FavouriteManager())
+}
