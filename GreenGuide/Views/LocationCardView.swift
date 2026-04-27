@@ -46,10 +46,10 @@ struct LocationCardView: View {
                     .foregroundColor(.gray)
                     .lineLimit(1)
 
-                Text(location.category)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.green)
+//                Text(location.category)
+//                    .font(.subheadline)
+//                    .fontWeight(.semibold)
+//                    .foregroundColor(.green)
             }
             .padding(16)
         }

@@ -9,14 +9,11 @@ import SwiftUI
 
 struct MainHomeView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
+    //use csv loader for data
+    @State private var locations: [GreenLocation] = []
 
-    let categories = [
-        ("Cottages", "house.fill"),
-        ("Castles", "building.columns.fill"),
-        ("Coastal", "water.waves"),
-        ("County", "map.fill"),
-        ("Dublin", "building.2.fill")
-    ]
+
+
 
     
     var body: some View {
@@ -26,7 +23,7 @@ struct MainHomeView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     header
                     searchBar
-                    categoryRow
+//                    categoryRow
 
                     Text("Featured Places")
                         .font(.title2)
@@ -46,6 +43,10 @@ struct MainHomeView: View {
                 .padding(.top, 20)
             }
             .background(Color(.systemGroupedBackground))
+        }
+        .task {
+            ///Load once when the view appears
+            locations = CSVLoader.loadLocations()
         }
     }
 
@@ -81,30 +82,30 @@ struct MainHomeView: View {
         .padding(.horizontal)
     }
 
-    private var categoryRow: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 22) {
-                ForEach(categories, id: \.0) { category in
-                    VStack(spacing: 8) {
-                        Circle()
-                            .fill(Color.gray.opacity(0.12))
-                            .frame(width: 62, height: 62)
-                            .overlay(
-                                Image(systemName: category.1)
-                                    .font(.title2)
-                                    .foregroundColor(.green)
-                            )
-
-                        Text(category.0)
-                            .font(.caption)
-                            .foregroundColor(.black)
-                    }
-                }
-            }
-            .padding(.horizontal)
-        }
-    }
-}
+//    private var categoryRow: some View {
+//        ScrollView(.horizontal, showsIndicators: false) {
+//            HStack(spacing: 22) {
+//                ForEach(categories, id: \.0) { category in
+//                    VStack(spacing: 8) {
+//                        Circle()
+//                            .fill(Color.gray.opacity(0.12))
+//                            .frame(width: 62, height: 62)
+//                            .overlay(
+//                                Image(systemName: category.1)
+//                                    .font(.title2)
+//                                    .foregroundColor(.green)
+//                            )
+//
+//                        Text(category.0)
+//                            .font(.caption)
+//                            .foregroundColor(.black)
+//                    }
+//                }
+//            }
+//            .padding(.horizontal)
+//        }
+//    }
+//}
 
 #Preview {
     MainHomeView()

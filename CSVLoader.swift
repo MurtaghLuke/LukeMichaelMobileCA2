@@ -8,80 +8,125 @@
 import Foundation
 
 class CSVLoader {
-    static func loadLocations()->[GreenLocation] {
-        
-
-
-        //find csv
+    static func loadLocations() -> [GreenLocation] {
         guard let fileURL = Bundle.main.url(forResource: "Attractions", withExtension: "csv") else {
-            print("File not found")
+            print("Attractions.csv not found in bundle")
             return []
         }
 
-        var locations: [GreenLocation] = []
-
-        
         do {
-              //read contents into a string
-              let data = try String(contentsOf: fileURL, encoding: .utf8)
-              // Split the file into rows with newline characters
-              let rows = data.components(separatedBy: "\n")
+            var text = try String(contentsOf: fileURL, encoding: .utf8)
+            // Normalize line endings
+            text = text.replacingOccurrences(of: "\r\n", with: "\n")
+                       .replacingOccurrences(of: "\r", with: "\n")
 
-            
-            for row in rows.dropFirst() {
+            var lines = text.split(separator: "\n", omittingEmptySubsequences: true).map(String.init)
+            guard !lines.isEmpty else { return [] }
 
-                //update to split only on commas outside quotes
-                let columns = row.components(separatedBy: ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
-                    .map { $0.replacingOccurrences(of: "\"", with: "") }
-                
-                
-                if columns.count >= 9 {
+            // Parse header and create a lookup for column indices
+            let headers = parseCSVRow(lines.removeFirst())
+            let indexFor = Dictionary(uniqueKeysWithValues: headers.enumerated().map { ($1.lowercased(), $0) })
 
-                    let name = columns[0].replacingOccurrences(of: "\"", with: "")
-                    let latitude = Double(columns[3].replacingOccurrences(of: "\"", with: "")) ?? 0.0
-                    let longitude = Double(columns[4].replacingOccurrences(of: "\"", with: "")) ?? 0.0
-                    let county = columns[6].replacingOccurrences(of: "\"", with: "")
-                    let imageURL = columns[7]
-                        .replacingOccurrences(of: "\"", with: "")
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                    let tags = columns[8].replacingOccurrences(of: "\"", with: "")
-
-                    let cleanTags = tags.lowercased()
-
-                    // only keep nature/outdoor attractions
-                    if true{
-
-                    // skip bad urls
-                    if !imageURL.starts(with: "http") {
-                        continue
-                    }
-                        
-                        let location = GreenLocation(
-                            id: UUID().uuidString,
-                            title: name,
-                            county: county,
-                            category: "Outdoor",
-                            imageURL: imageURL,
-                            rating: "4.5", //placeholder (CSV doesn’t have it)
-                            description: "Outdoor location in \(county).", //csv doesnt have
-                            highlights: tags.components(separatedBy: " ") //csv doesnt have
-                        )
-
-                        locations.append(location)
-                    }
-                }
+            func value(_ key: String, in fields: [String]) -> String {
+                guard let idx = indexFor[key.lowercased()], idx < fields.count else { return "" }
+                return fields[idx]
             }
 
-            
-            
-          } catch {
-              print("Error reading CSV file: \(error)")
-          }
+            var locations: [GreenLocation] = []
+            locations.reserveCapacity(lines.count)
 
-        
+            for line in lines {
+                let fields = parseCSVRow(line)
+                if fields.isEmpty { continue }
 
-        print("Loaded locations: \(locations.count)")
-        return Array(locations.prefix(200))
+                // Adjust these keys to match your CSV headers exactly
+                let name = value("name", in: fields)
+                let latitude = Double(value("latitude", in: fields)) ?? 0
+                let longitude = Double(value("longitude", in: fields)) ?? 0
+                let county = value("county", in: fields)
+                let imageURL = value("imageurl", in: fields)
+                let tags = value("tags", in: fields).lowercased()
+
+                // Basic quality checks
+                if name.isEmpty || county.isEmpty { continue }
+
+                // If you only want nature/outdoor, filter here (optional)
+                let isNature = tags.contains("nature") || tags.contains("outdoor")
+
+                // If you want to enforce nature/outdoor only, uncomment:
+                // guard isNature else { continue }
+
+                // If imageURL is missing/invalid, let AsyncImage fallback handle it
+                let highlights = tags
+                    .split(whereSeparator: { $0 == ";" || $0 == "," || $0 == " " })
+                    .map { String($0).trimmingCharacters(in: .whitespaces) }
+                    .filter { !$0.isEmpty }
+
+                let location = GreenLocation(
+                    id: UUID().uuidString,  // use a stable "id" column if your CSV has one
+                    title: name,
+                    county: county,
+                    category: isNature ? "Outdoor" : "Attraction",
+                    imageURL: imageURL.trimmingCharacters(in: .whitespacesAndNewlines),
+                    rating: "4.5", // placeholder if CSV has no rating
+                    description: "Attraction in \(county).",
+                    highlights: highlights
+                )
+
+                locations.append(location)
+            }
+
+            print("Loaded locations: \(locations.count)")
+            // You can remove the limit if you want them all
+            return Array(locations.prefix(200))
+        } catch {
+            print("Error reading CSV file: \(error)")
+            return []
+        }
+    }
+
+    // Parser that respects quotes and commas within quotes
+    private static func parseCSVRow(_ line: String) -> [String] {
+        var fields: [String] = []
+        var current = ""
+        var inQuotes = false
+        var iterator = line.makeIterator()
+
+        while let ch = iterator.next() {
+            if ch == "\"" {
+                if inQuotes {
+                    // Lookahead for escaped quote
+                    if let next = iterator.next() {
+                        if next == "\"" {
+                            current.append("\"")
+                        } else {
+                            inQuotes = false
+                            if next == "," {
+                                fields.append(current)
+                                current = ""
+                            } else {
+                                current.append(next)
+                            }
+                        }
+                    } else {
+                        inQuotes = false
+                    }
+                } else {
+                    inQuotes = true
+                }
+            } else if ch == "," && !inQuotes {
+                fields.append(current)
+                current = ""
+            } else {
+                current.append(ch)
+            }
+        }
+
+        fields.append(current)
+        return fields.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
 }
+
+
+
 
