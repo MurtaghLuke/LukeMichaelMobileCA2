@@ -8,11 +8,15 @@
 import SwiftUI
 
 struct LocationDetailView: View {
-
     @EnvironmentObject var favouriteManager: FavouriteManager
     @Environment(\.dismiss) private var dismiss
 
     let location: GreenLocation
+
+    // Turns the saved image text into a URL for AsyncImage.
+    private var remoteImageURL: URL? {
+        URL(string: location.imageURL)
+    }
 
     var body: some View {
         ScrollView {
@@ -37,21 +41,29 @@ struct LocationDetailView: View {
         .navigationBarBackButtonHidden(true)
     }
 
-
     private var heroImage: some View {
         ZStack(alignment: .top) {
             GeometryReader { geo in
-                AsyncImage(url: URL(string: location.imageURL)) { phase in
-                    switch phase {
+                /////try to load the attraction image from the CSV URL.
+                AsyncImage(url: remoteImageURL) {phase in
+                    switch phase{
                     case .success(let image):
                         image
                             .resizable()
                             .scaledToFill()
 
-                    default:
-                        Image("cottage")
-                            .resizable()
-                            .scaledToFill()
+                    case .failure, .empty:
+                        // show a  placeholder if the image is missing
+                        ZStack {
+                            Color(.systemGray5)
+
+                            Image(systemName: "photo")
+                                .font(.system(size: 42))
+                                .foregroundColor(.gray)
+                        }
+
+                    @unknown default:
+                        EmptyView()
                     }
                 }
                 .frame(width: geo.size.width, height: 320)
@@ -59,6 +71,7 @@ struct LocationDetailView: View {
             }
             .frame(height: 320)
 
+            //// top buttons for going back and saving to favourites
             HStack {
                 Button {
                     dismiss()
@@ -71,8 +84,10 @@ struct LocationDetailView: View {
                 Button {
                     favouriteManager.toggle(location)
                 } label: {
-                    circleIcon(favouriteManager.isFavourite(location) ? "heart.fill" : "heart",
-                               color: favouriteManager.isFavourite(location) ? .red : .black)
+                    circleIcon(
+                        favouriteManager.isFavourite(location) ? "heart.fill" : "heart",
+                        color: favouriteManager.isFavourite(location) ? .red : .black
+                    )
                 }
             }
             .padding(.horizontal, 20)
@@ -81,6 +96,7 @@ struct LocationDetailView: View {
     }
 
     private var titleSection: some View {
+        //Main name, rating, and location of the attraction
         VStack(alignment: .leading, spacing: 10) {
             Text(location.title)
                 .font(.system(size: 30, weight: .bold))
@@ -114,6 +130,7 @@ struct LocationDetailView: View {
     }
 
     private var offersSection: some View {
+        ///show the attraction tags
         VStack(alignment: .leading, spacing: 14) {
             Text("What this place offers")
                 .font(.title2)

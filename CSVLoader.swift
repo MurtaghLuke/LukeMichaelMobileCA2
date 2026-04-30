@@ -8,78 +8,114 @@
 import Foundation
 
 class CSVLoader {
-    static func loadLocations()->[Location] {
-        
+    // nature tags
+    private static let natureKeywords = [
+        "nature", "outdoor", "wildlife", "walking", "hiking", "cycling", "kayaking", "surfing", "beach", "garden", "forest", "park", "island",  "climbing", "fishing", "boat"
+    ]
 
-
-        //find csv
+    static func loadLocations() -> [GreenLocation] {
+        // Find the CSV file inside the app bundle.
         guard let fileURL = Bundle.main.url(forResource: "Attractions", withExtension: "csv") else {
-            print("File not found")
+            print("Attractions.csv not found in bundle")
             return []
         }
 
-        var locations: [Location] = []
-
-        
         do {
-              //read contents into a string
-              let data = try String(contentsOf: fileURL, encoding: .utf8)
-              // Split the file into rows with newline characters
-              let rows = data.components(separatedBy: "\n")
-
+            // Read the file as text.
+            // Replace different line endings so each row is easier to split.
+            let text = try String(contentsOf: fileURL, encoding: .utf8)
+                .replacingOccurrences(of: "\r\n", with: "\n")
+                .replacingOccurrences(of: "\r", with: "\n")
             
-            for row in rows.dropFirst() {
-
-                let columns = row.components(separatedBy: ",")
-
-                if columns.count >= 9 {
-
-                    let name = columns[0].replacingOccurrences(of: "\"", with: "")
-                    let latitude = Double(columns[3].replacingOccurrences(of: "\"", with: "")) ?? 0.0
-                    let longitude = Double(columns[4].replacingOccurrences(of: "\"", with: "")) ?? 0.0
-                    let county = columns[6].replacingOccurrences(of: "\"", with: "")
-                    let imageURL = columns[7]
-                        .replacingOccurrences(of: "\"", with: "")
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                    let tags = columns[8].replacingOccurrences(of: "\"", with: "")
-
-                    let cleanTags = tags.lowercased()
-
-                    // only keep nature/outdoor attractions
-                    if cleanTags.contains("outdoor") ||
-                       cleanTags.contains("nature") ||
-                       cleanTags.contains("walk") ||
-                       cleanTags.contains("trail") {
-
-                    // skip bad urls
-                    if !imageURL.starts(with: "http") {
-                        continue
-                    }
-                        
-                        let location = Location(
-                            name: name,
-                            latitude: latitude,
-                            longitude: longitude,
-                            county: county,
-                            imageURL: imageURL,
-                            tags: tags
-                        )
-
-                        locations.append(location)
-                    }
+            // Split the file into lines.
+            // The first line is the header row, so the data starts after that.
+            let lines = text.split(separator: "\n", omittingEmptySubsequences: true).map(String.init)
+            guard lines.count > 1 else { return [] }
+            
+            //store final list of attractions
+            var locations: [GreenLocation] = []
+            
+            for line in lines.dropFirst() {
+                //turn one CSV row into separate fields
+                let fields = parseCSVRow(line)
+                
+                //skip rows that dont have enough columns
+                guard fields.count > 8 else{
+                    continue
                 }
+                
+                //read in the main values we need from the CSV
+                //0 = Name, 6 = County, 7 = Photo, 8 = Tags
+                let name = fields[0].trimmingCharacters(in: .whitespacesAndNewlines)
+                let county = fields[6].trimmingCharacters(in: .whitespacesAndNewlines)
+                let imageURL = fields[7].trimmingCharacters(in: .whitespacesAndNewlines)
+                let tagsText = fields[8].trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                // Split the tags into an array for use in the app.
+                let tags = tagsText
+                    .split(separator: ",")
+                    .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+                
+                
+                // Only keep places that suit the nature app theme
+                guard isNatureAttraction(tagsText.lowercased())
+                else {
+                    continue
+                }
+                
+                
+                
+                //Convert the CSV row into a GreenLocation object.
+                locations.append(
+                    GreenLocation(
+                        id: UUID().uuidString,
+                        title: name,
+                        county: county,
+                        category: "Nature",
+                        imageURL: imageURL,
+                        rating: "4.5",
+                        description: "Outdoor attraction in \(county), Ireland.",
+                        highlights: tags
+                    )
+                )
             }
-
             
             
-          } catch {
-              print("Error reading CSV file: \(error)")
-          }
+            return locations
+        } catch {
+            print("Error reading CSV file: \(error)")
+            return []
+        }
+    }
 
-        
+    ////check if any of the nature keywords appear in the tags
+    private static func isNatureAttraction(_ tags: String)-> Bool {
+        natureKeywords.contains {
+            tags.contains($0)
+        }
+    }
 
-        
-        return Array(locations.prefix(200))
+
+
+    //Split one CSV row into fields.
+    //Commas inside quotes will stay inside the same field
+    private static func parseCSVRow(_ line: String) -> [String] {
+        var fields:[String] = []
+        var current = ""
+        var insideQuotes = false
+
+        for character in line {
+            if character == "\"" {
+                insideQuotes.toggle()
+            } else if character == "," && !insideQuotes {
+                fields.append(current)
+                current = ""
+            } else{
+                current.append(character)
+            }
+        }
+
+        fields.append(current)
+        return fields
     }
 }
-
