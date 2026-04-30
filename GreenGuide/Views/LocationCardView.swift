@@ -3,21 +3,33 @@ import SwiftUI
 struct LocationCardView: View {
     let location: GreenLocation
 
+    ////Turn the saved image text into a url for async image
+    private var remoteImageURL: URL? {
+        URL(string: location.imageURL)
+    }
+
     var body: some View {
-
         VStack(alignment: .leading, spacing: 0) {
-
-            AsyncImage(url: URL(string: location.imageURL)) { phase in
+            ////try to load the attraction image from the CSV URL
+            AsyncImage(url: remoteImageURL) { phase in
                 switch phase {
                 case .success(let image):
                     image
                         .resizable()
                         .scaledToFill()
 
-                default:
-                    Image("cottage")
-                        .resizable()
-                        .scaledToFill()
+                case .failure, .empty:
+                    // Show a placeholder if the image is missing
+                    ZStack {
+                        Color(.systemGray5)
+
+                        Image(systemName: "photo")
+                            .font(.system(size: 36))
+                            .foregroundColor(.gray)
+                    }
+
+                @unknown default:
+                    EmptyView()
                 }
             }
             .frame(maxWidth: .infinity)
@@ -46,10 +58,10 @@ struct LocationCardView: View {
                     .foregroundColor(.gray)
                     .lineLimit(1)
 
-//                Text(location.category)
-//                    .font(.subheadline)
-//                    .fontWeight(.semibold)
-//                    .foregroundColor(.green)
+                Text(location.category)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.green)
             }
             .padding(16)
         }

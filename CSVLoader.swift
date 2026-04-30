@@ -48,7 +48,7 @@ class CSVLoader {
                 //0 = Name, 6 = County, 7 = Photo, 8 = Tags
                 let name = fields[0].trimmingCharacters(in: .whitespacesAndNewlines)
                 let county = fields[6].trimmingCharacters(in: .whitespacesAndNewlines)
-                let imageURL =
+                let imageURL = fields[7].trimmingCharacters(in: .whitespacesAndNewlines)
                 let tagsText = fields[8].trimmingCharacters(in: .whitespacesAndNewlines)
                 
                 // Split the tags into an array for use in the app.
@@ -82,8 +82,10 @@ class CSVLoader {
             
             
             return locations
+        } catch {
+            print("Error reading CSV file: \(error)")
+            return []
         }
-
     }
 
     ////check if any of the nature keywords appear in the tags
