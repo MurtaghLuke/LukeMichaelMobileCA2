@@ -30,6 +30,7 @@ final class InboxManager: ObservableObject {
             seedMessages()
         }
     }
+    
 
     func addMessage(title: String, message: String, sender: String = "GreenGuide") {
         let newMessage = InboxMessage(
