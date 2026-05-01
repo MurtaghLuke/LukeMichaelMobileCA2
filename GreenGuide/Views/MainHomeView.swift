@@ -9,6 +9,9 @@ import SwiftUI
 
 struct MainHomeView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
+    @EnvironmentObject var notificationManager: AppNotificationManager
+    @EnvironmentObject var inboxManager: InboxManager
+
     //hold attrations from csvloader
     @State private var locations: [GreenLocation] = []
 
@@ -56,6 +59,8 @@ struct MainHomeView: View {
                             NavigationLink {
                                 LocationDetailView(location: location)
                                     .environmentObject(favouriteManager)
+                                    .environmentObject(notificationManager)
+                                    .environmentObject(inboxManager)
                             } label: {
                                 LocationCardView(location: location)
                             }
@@ -103,4 +108,6 @@ struct MainHomeView: View {
 #Preview {
     MainHomeView()
         .environmentObject(FavouriteManager())
+        .environmentObject(AppNotificationManager.shared)
+        .environmentObject(InboxManager.shared)
 }

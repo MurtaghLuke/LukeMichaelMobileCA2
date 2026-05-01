@@ -9,11 +9,12 @@ import SwiftUI
 
 struct LocationDetailView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
+    @EnvironmentObject var notificationManager: AppNotificationManager
+    @EnvironmentObject var inboxManager: InboxManager
     @Environment(\.dismiss) private var dismiss
 
     let location: GreenLocation
 
-    // Turns the saved image text into a URL for AsyncImage.
     private var remoteImageURL: URL? {
         URL(string: location.imageURL)
     }
@@ -44,16 +45,14 @@ struct LocationDetailView: View {
     private var heroImage: some View {
         ZStack(alignment: .top) {
             GeometryReader { geo in
-                /////try to load the attraction image from the CSV URL.
-                AsyncImage(url: remoteImageURL) {phase in
-                    switch phase{
+                AsyncImage(url: remoteImageURL) { phase in
+                    switch phase {
                     case .success(let image):
                         image
                             .resizable()
                             .scaledToFill()
 
                     case .failure, .empty:
-                        // show a  placeholder if the image is missing
                         ZStack {
                             Color(.systemGray5)
 
@@ -71,7 +70,6 @@ struct LocationDetailView: View {
             }
             .frame(height: 320)
 
-            //// top buttons for going back and saving to favourites
             HStack {
                 Button {
                     dismiss()
@@ -82,7 +80,7 @@ struct LocationDetailView: View {
                 Spacer()
 
                 Button {
-                    favouriteManager.toggle(location)
+                    saveOrRemoveWishlist()
                 } label: {
                     circleIcon(
                         favouriteManager.isFavourite(location) ? "heart.fill" : "heart",
@@ -96,7 +94,6 @@ struct LocationDetailView: View {
     }
 
     private var titleSection: some View {
-        //Main name, rating, and location of the attraction
         VStack(alignment: .leading, spacing: 10) {
             Text(location.title)
                 .font(.system(size: 30, weight: .bold))
@@ -130,7 +127,6 @@ struct LocationDetailView: View {
     }
 
     private var offersSection: some View {
-        ///show the attraction tags
         VStack(alignment: .leading, spacing: 14) {
             Text("What this place offers")
                 .font(.title2)
@@ -156,7 +152,7 @@ struct LocationDetailView: View {
 
     private var wishlistButton: some View {
         Button {
-            favouriteManager.toggle(location)
+            saveOrRemoveWishlist()
         } label: {
             Text(favouriteManager.isFavourite(location) ? "Remove from Wishlist" : "Save to Wishlist")
                 .font(.headline)
@@ -169,6 +165,22 @@ struct LocationDetailView: View {
         .padding(.top, 10)
     }
 
+    private func saveOrRemoveWishlist() {
+        let wasAlreadyFavourite = favouriteManager.isFavourite(location)
+
+        favouriteManager.toggle(location)
+
+        if !wasAlreadyFavourite {
+            notificationManager.notifyWishlistAdded(locationName: location.title)
+
+            inboxManager.addMessage(
+                title: "Saved to Wishlist",
+                message: "\(location.title) in \(location.county) has been added to your wishlist.",
+                sender: "GreenGuide"
+            )
+        }
+    }
+
     private func circleIcon(_ name: String, color: Color = .black) -> some View {
         Image(systemName: name)
             .font(.title3)
@@ -178,4 +190,11 @@ struct LocationDetailView: View {
             .clipShape(Circle())
             .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
     }
+}
+
+#Preview {
+    LocationDetailView(location: sampleLocations[0])
+        .environmentObject(FavouriteManager())
+        .environmentObject(AppNotificationManager.shared)
+        .environmentObject(InboxManager.shared)
 }

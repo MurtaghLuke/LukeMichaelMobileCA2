@@ -8,10 +8,8 @@ import SwiftUI
 
 struct WishlistView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
-
-    var savedLocations: [GreenLocation] {
-        sampleLocations.filter { favouriteManager.favouriteIDs.contains($0.id) }
-    }
+    @EnvironmentObject var inboxManager: InboxManager
+    @EnvironmentObject var notificationManager: AppNotificationManager
 
     var body: some View {
         NavigationStack {
@@ -22,27 +20,15 @@ struct WishlistView: View {
                         .fontWeight(.bold)
                         .padding(.horizontal)
 
-                    if savedLocations.isEmpty {
-                        VStack(spacing: 16) {
-                            Image(systemName: "heart")
-                                .font(.system(size: 70))
-                                .foregroundColor(.green)
-
-                            Text("No saved places yet")
-                                .font(.title2)
-                                .fontWeight(.bold)
-
-                            Text("Tap the heart icon on a location to save it here.")
-                                .foregroundColor(.gray)
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 100)
+                    if favouriteManager.favouriteLocations.isEmpty {
+                        emptyState
                     } else {
-                        ForEach(savedLocations) { location in
+                        ForEach(favouriteManager.favouriteLocations) { location in
                             NavigationLink {
                                 LocationDetailView(location: location)
                                     .environmentObject(favouriteManager)
+                                    .environmentObject(notificationManager)
+                                    .environmentObject(inboxManager)
                             } label: {
                                 LocationCardView(location: location)
                             }
@@ -55,4 +41,30 @@ struct WishlistView: View {
             .background(Color(.systemGroupedBackground))
         }
     }
+
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "heart")
+                .font(.system(size: 70))
+                .foregroundColor(.green)
+
+            Text("No saved places yet")
+                .font(.title2)
+                .fontWeight(.bold)
+
+            Text("Tap the heart icon on a location to save it here.")
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 100)
+    }
+}
+
+#Preview {
+    WishlistView()
+        .environmentObject(FavouriteManager())
+        .environmentObject(InboxManager.shared)
+        .environmentObject(AppNotificationManager.shared)
 }
