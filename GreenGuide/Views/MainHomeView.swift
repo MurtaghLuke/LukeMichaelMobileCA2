@@ -65,12 +65,9 @@ struct MainHomeView: View {
                                     selectedLocation = location
                                     showLocationDetails = true
                                 }
-
-                                Button(
-                                    favouriteManager.isFavourite(location) ? "Remove from Wishlist" : "Add to Wishlist"
-                                ) {
-                                    favouriteManager.toggle(location)
-                                }
+                                
+                                //toggle wishlist button in home screen context menu popup
+                                
 
                                 Button("Directions") {
                                     openDirections(for: location)
