@@ -55,4 +55,10 @@ struct WishlistView: View {
             .background(Color(.systemGroupedBackground))
         }
     }
-}
+//    //search for attraction on apple maps
+//    private func openDirections(for location: GreenLocation) {
+//
+//
+//
+//    }
+//}

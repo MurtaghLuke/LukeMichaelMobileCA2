@@ -60,6 +60,22 @@ struct MainHomeView: View {
                                 LocationCardView(location: location)
                             }
                             .buttonStyle(.plain)
+                            .contextMenu {
+                                Button("More Info") {
+                                    selectedLocation = location
+                                    showLocationDetails = true
+                                }
+
+                                Button(
+                                    favouriteManager.isFavourite(location) ? "Remove from Wishlist" : "Add to Wishlist"
+                                ) {
+                                    favouriteManager.toggle(location)
+                                }
+
+                                Button("Directions") {
+                                    openDirections(for: location)
+                                }
+                            }
                         }
                     }
                 }
