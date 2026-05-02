@@ -23,6 +23,14 @@ struct InboxView: View {
                                 InboxMessageRow(message: message)
                             }
                             .buttonStyle(.plain)
+                            //delete message with swipe
+                            .swipeActions(allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    inboxManager.deleteMessage(message)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
                     }
                     .listStyle(.plain)

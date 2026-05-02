@@ -53,6 +53,12 @@ final class InboxManager: ObservableObject {
         }
     }
 
+        //delete message with swipe
+    func deleteMessage(_ message: InboxMessage) {
+        messages.removeAll { $0.id == message.id }
+        saveMessages()
+    }
+
     private func seedMessages() { // When user is logged in with access to inbox
         messages = [
             InboxMessage(

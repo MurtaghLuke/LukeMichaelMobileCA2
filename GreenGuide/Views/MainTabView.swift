@@ -17,6 +17,7 @@ struct MainTabView: View {
                 MainHomeView()
                     .environmentObject(favouriteManager)
                     .environmentObject(inboxManager)
+                    .environmentObject(notificationManager)
                     .tabItem {
                         Image(systemName: "magnifyingglass")
                         Text("Explore")

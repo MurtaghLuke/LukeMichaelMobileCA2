@@ -11,14 +11,14 @@ struct WishlistView: View {
     @EnvironmentObject var inboxManager: InboxManager
     @EnvironmentObject var notificationManager: AppNotificationManager
     @Environment(\.openURL) private var openURL
-    // Stores the card chosen from the long press menu
+
     @State private var selectedLocation: GreenLocation?
     @State private var showLocationDetails = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                LazyVStack(alignment: .leading, spacing: 20) {
                     Text("Wishlist")
                         .font(.largeTitle)
                         .fontWeight(.bold)
@@ -36,6 +36,7 @@ struct WishlistView: View {
                             } label: {
                                 LocationCardView(location: location)
                             }
+                            .frame(maxWidth: .infinity)
                             .buttonStyle(.plain)
                             .contextMenu {
                                 Button("More Info") {

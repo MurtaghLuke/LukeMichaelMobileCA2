@@ -99,6 +99,8 @@ struct MainHomeView: View {
                 if let selectedLocation {
                     LocationDetailView(location:selectedLocation)
                         .environmentObject(favouriteManager)
+                        .environmentObject(notificationManager)
+                        .environmentObject(inboxManager)
                 }
             }
         }
