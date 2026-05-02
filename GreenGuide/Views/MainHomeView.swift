@@ -89,6 +89,13 @@ struct MainHomeView: View {
                 .padding(.top, 20)
             }
             .background(Color(.systemGroupedBackground))
+            // use the selected location after pressing more info in context menu
+            .navigationDestination(isPresented: $showLocationDetails) {
+                if let selectedLocation {
+                    LocationDetailView(location:selectedLocation)
+                        .environmentObject(favouriteManager)
+                }
+            }
         }
         .task {
             locations = CSVLoader.loadLocations()
