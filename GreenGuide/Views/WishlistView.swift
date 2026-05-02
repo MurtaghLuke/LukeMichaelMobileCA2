@@ -53,7 +53,7 @@ struct WishlistView: View {
                                 LocationCardView(location: location)
                             }
                             .buttonStyle(.plain)
-                            // Long press opens a menu without fighting the NavigationLink tap.
+                            //press and hold
                             .contextMenu {
                                 Button("More Info") {
                                     selectedLocation = location

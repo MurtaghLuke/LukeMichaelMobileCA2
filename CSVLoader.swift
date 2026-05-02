@@ -70,7 +70,10 @@ class CSVLoader {
                 //Convert the CSV row into a GreenLocation object.
                 locations.append(
                     GreenLocation(
-                        id: UUID().uuidString,
+                        // Removed unique id as wishlist and home page cards had different ids. wishlist cards werent displaying
+                        id: "\(name)-\(county)-\(latitude)-\(longitude)"
+                            .lowercased()
+                            .replacingOccurrences(of: " ", with: "-"),
                         title: name,
                         county: county,
                         category: "Nature",
