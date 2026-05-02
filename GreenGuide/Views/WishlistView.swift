@@ -8,6 +8,8 @@ import SwiftUI
 
 struct WishlistView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
+    @EnvironmentObject var inboxManager: InboxManager
+    @EnvironmentObject var notificationManager: AppNotificationManager
     @Environment(\.openURL) private var openURL
     // Stores the card chosen from the long press menu
     @State private var selectedLocation: GreenLocation?
@@ -27,28 +29,15 @@ struct WishlistView: View {
                         .fontWeight(.bold)
                         .padding(.horizontal)
 
-                    if savedLocations.isEmpty {
-                        VStack(spacing: 16) {
-                            Image(systemName: "heart")
-                                .font(.system(size: 70))
-                                .foregroundColor(.green)
-
-                            Text("No saved places yet")
-                                .font(.title2)
-                                .fontWeight(.bold)
-
-                            Text("Tap the heart icon on a location to save it here.")
-                                .foregroundColor(.gray)
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 100)
+                    if favouriteManager.favouriteLocations.isEmpty {
+                        emptyState
                     } else {
-                        ForEach(savedLocations) { location in
-                            //normal tap will still open detail screen
+                        ForEach(favouriteManager.favouriteLocations) { location in
                             NavigationLink {
                                 LocationDetailView(location: location)
                                     .environmentObject(favouriteManager)
+                                    .environmentObject(notificationManager)
+                                    .environmentObject(inboxManager)
                             } label: {
                                 LocationCardView(location: location)
                             }
@@ -84,6 +73,31 @@ struct WishlistView: View {
         }
     }
 
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "heart")
+                .font(.system(size: 70))
+                .foregroundColor(.green)
+
+            Text("No saved places yet")
+                .font(.title2)
+                .fontWeight(.bold)
+
+            Text("Tap the heart icon on a location to save it here.")
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 100)
+    }
+}
+
+#Preview {
+    WishlistView()
+        .environmentObject(FavouriteManager())
+        .environmentObject(InboxManager.shared)
+        .environmentObject(AppNotificationManager.shared)
     private func openDirections(for location: GreenLocation) {
         //open maps with the coordinates loaded from the CSV.
         let name = location.title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
