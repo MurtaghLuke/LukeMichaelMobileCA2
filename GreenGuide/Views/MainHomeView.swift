@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MainHomeView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
+    @Environment(\.openURL) private var openURL
     //hold attrations from csvloader
     @State private var locations: [GreenLocation] = []
     // stores the card chosen from the long press menu.
@@ -64,6 +65,7 @@ struct MainHomeView: View {
                                 LocationCardView(location: location)
                             }
                             .buttonStyle(.plain)
+                            //long press opens context menu
                             .contextMenu {
                                 Button("More Info") {
                                     selectedLocation = location
@@ -120,8 +122,18 @@ struct MainHomeView: View {
         .padding(.horizontal)
     }
 
-    private func openDirections(for location: GreenLocation) {
+    /////https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html
+    //open apple maps with the coordinates in the csv
+    private func openDirections(for location: GreenLocation){
+        let name = location.title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+            //build maps url with lat and long
+        guard let url = URL(
+            string: "http://maps.apple.com/?ll=\(location.latitude),\(location.longitude)&q=\(name)"
+        ) else{
+            return
+        }
 
+        openURL(url)
     }
 }
 

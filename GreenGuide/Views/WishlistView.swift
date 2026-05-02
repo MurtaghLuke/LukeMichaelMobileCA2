@@ -74,12 +74,26 @@ struct WishlistView: View {
                 .padding(.top, 30)
             }
             .background(Color(.systemGroupedBackground))
+            // Push the selected location after choosing "More Info" from the menu.
+            .navigationDestination(isPresented: $showLocationDetails) {
+                if let selectedLocation {
+                    LocationDetailView(location: selectedLocation)
+                        .environmentObject(favouriteManager)
+                }
+            }
         }
     }
-//    //search for attraction on apple maps
-//    private func openDirections(for location: GreenLocation) {
-//
-//
-//
-//    }
-//}
+
+    private func openDirections(for location: GreenLocation) {
+        //open maps with the coordinates loaded from the CSV.
+        let name = location.title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+
+        guard let url = URL(
+            string: "http://maps.apple.com/?ll=\(location.latitude),\(location.longitude)&q=\(name)"
+        ) else {
+            return
+        }
+
+        openURL(url)
+    }
+}
