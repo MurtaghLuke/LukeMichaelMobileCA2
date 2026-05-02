@@ -8,6 +8,11 @@ import SwiftUI
 
 struct WishlistView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
+    @Environment(\.openURL) private var openURL
+    // Stores the card chosen from the long press menu
+    @State private var selectedLocation: GreenLocation?
+    // Opens the selected card in the detail screen from the context menu
+    @State private var showLocationDetails = false
 
     var savedLocations: [GreenLocation] {
         sampleLocations.filter { favouriteManager.favouriteIDs.contains($0.id) }
@@ -40,6 +45,7 @@ struct WishlistView: View {
                         .padding(.top, 100)
                     } else {
                         ForEach(savedLocations) { location in
+                            //normal tap will still open detail screen
                             NavigationLink {
                                 LocationDetailView(location: location)
                                     .environmentObject(favouriteManager)
@@ -47,12 +53,47 @@ struct WishlistView: View {
                                 LocationCardView(location: location)
                             }
                             .buttonStyle(.plain)
+                            //press and hold
+                            .contextMenu {
+                                Button("More Info") {
+                                    selectedLocation = location
+                                    showLocationDetails = true
+                                }
+
+                                Button("Remove from Wishlist") {
+                                    favouriteManager.toggle(location)
+                                }
+
+                                Button("Directions") {
+                                    openDirections(for: location)
+                                }
+                            }
                         }
                     }
                 }
                 .padding(.top, 30)
             }
             .background(Color(.systemGroupedBackground))
+            // Push the selected location after choosing "More Info" from the menu.
+            .navigationDestination(isPresented: $showLocationDetails) {
+                if let selectedLocation {
+                    LocationDetailView(location: selectedLocation)
+                        .environmentObject(favouriteManager)
+                }
+            }
         }
+    }
+
+    private func openDirections(for location: GreenLocation) {
+        //open maps with the coordinates loaded from the CSV.
+        let name = location.title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+
+        guard let url = URL(
+            string: "http://maps.apple.com/?ll=\(location.latitude),\(location.longitude)&q=\(name)"
+        ) else {
+            return
+        }
+
+        openURL(url)
     }
 }

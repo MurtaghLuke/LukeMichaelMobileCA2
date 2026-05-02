@@ -45,8 +45,10 @@ class CSVLoader {
                 }
                 
                 //read in the main values we need from the CSV
-                //0 = Name, 6 = County, 7 = Photo, 8 = Tags
+                //0 = Name, 3 = Latitude, 4 = Longitude, 6 = County, 7 = Photo, 8 = Tags
                 let name = fields[0].trimmingCharacters(in: .whitespacesAndNewlines)
+                let latitude = Double(fields[3].trimmingCharacters(in: .whitespacesAndNewlines))  ?? 0
+                let longitude = Double(fields[4].trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
                 let county = fields[6].trimmingCharacters(in: .whitespacesAndNewlines)
                 let imageURL = fields[7].trimmingCharacters(in: .whitespacesAndNewlines)
                 let tagsText = fields[8].trimmingCharacters(in: .whitespacesAndNewlines)
@@ -68,11 +70,16 @@ class CSVLoader {
                 //Convert the CSV row into a GreenLocation object.
                 locations.append(
                     GreenLocation(
-                        id: UUID().uuidString,
+                        // Removed unique id as wishlist and home page cards had different ids. wishlist cards werent displaying
+                        id: "\(name)-\(county)-\(latitude)-\(longitude)"
+                            .lowercased()
+                            .replacingOccurrences(of: " ", with: "-"),
                         title: name,
                         county: county,
                         category: "Nature",
                         imageURL: imageURL,
+                        latitude: latitude,
+                        longitude: longitude,
                         rating: "4.5",
                         description: "Outdoor attraction in \(county), Ireland.",
                         highlights: tags
