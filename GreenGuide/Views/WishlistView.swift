@@ -47,6 +47,17 @@ struct WishlistView: View {
                                 LocationCardView(location: location)
                             }
                             .buttonStyle(.plain)
+                            .contextMenu {
+                                Button("More Info") {
+                                    selectedLocation = location
+                                    showLocationDetails = true
+                                }
+
+                                Button("Remove from Wishlist") {
+                                    favouriteManager.toggle(location)
+                                }
+
+                            }
                         }
                     }
                 }
