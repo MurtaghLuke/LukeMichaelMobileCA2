@@ -12,6 +12,8 @@ struct GreenLocation: Identifiable, Codable, Equatable {
     let county: String
     let category: String
     let imageURL: String
+    let latitude: Double
+    let longitude: Double
     let rating: String
     let description: String
     let highlights: [String]
@@ -53,4 +55,3 @@ let sampleLocations: [GreenLocation] = CSVLoader.loadLocations()
 //        description: "Enjoy coastal views, fresh air and scenic walking areas along Ireland’s beautiful coastline.",
 //        highlights: ["Sea views", "Walking", "Wildlife", "Photography"]
 //    )
-
