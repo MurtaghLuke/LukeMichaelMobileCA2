@@ -11,6 +11,10 @@ struct MainHomeView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
     //hold attrations from csvloader
     @State private var locations: [GreenLocation] = []
+    // stores the card chosen from the long press menu.
+    @State private var selectedLocation: GreenLocation?
+    // opens the selected card in the detail screen from context menu
+    @State private var showLocationDetails = false
 
     //filter keywords for home page
     private let natureKeywords = [
@@ -66,7 +70,11 @@ struct MainHomeView: View {
                                     showLocationDetails = true
                                 }
                                 
-                                //toggle wishlist button in home screen context menu popup
+                                Button(
+                                    favouriteManager.isFavourite(location) ? "Remove from Wishlist" : "Add to Wishlist"
+                                ) {
+                                    favouriteManager.toggle(location)
+                                }
                                 
 
                                 Button("Directions") {
@@ -110,6 +118,10 @@ struct MainHomeView: View {
         .background(Color.white)
         .cornerRadius(22)
         .padding(.horizontal)
+    }
+
+    private func openDirections(for location: GreenLocation) {
+
     }
 }
 

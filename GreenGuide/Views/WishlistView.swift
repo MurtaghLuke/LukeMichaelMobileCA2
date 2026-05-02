@@ -8,6 +8,11 @@ import SwiftUI
 
 struct WishlistView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
+    @Environment(\.openURL) private var openURL
+    // Stores the card chosen from the long press menu
+    @State private var selectedLocation: GreenLocation?
+    // Opens the selected card in the detail screen from the context menu
+    @State private var showLocationDetails = false
 
     var savedLocations: [GreenLocation] {
         sampleLocations.filter { favouriteManager.favouriteIDs.contains($0.id) }
@@ -40,6 +45,7 @@ struct WishlistView: View {
                         .padding(.top, 100)
                     } else {
                         ForEach(savedLocations) { location in
+                            //normal tap will still open detail screen
                             NavigationLink {
                                 LocationDetailView(location: location)
                                     .environmentObject(favouriteManager)
@@ -47,6 +53,7 @@ struct WishlistView: View {
                                 LocationCardView(location: location)
                             }
                             .buttonStyle(.plain)
+                            // Long press opens a menu without fighting the NavigationLink tap.
                             .contextMenu {
                                 Button("More Info") {
                                     selectedLocation = location
@@ -57,6 +64,9 @@ struct WishlistView: View {
                                     favouriteManager.toggle(location)
                                 }
 
+                                Button("Directions") {
+                                    openDirections(for: location)
+                                }
                             }
                         }
                     }
