@@ -12,8 +12,13 @@ struct MainHomeView: View {
     @EnvironmentObject var notificationManager: AppNotificationManager
     @EnvironmentObject var inboxManager: InboxManager
 
+    @Environment(\.openURL) private var openURL
     //hold attrations from csvloader
     @State private var locations: [GreenLocation] = []
+    // stores the card chosen from the long press menu.
+    @State private var selectedLocation: GreenLocation?
+    // opens the selected card in the detail screen from context menu
+    @State private var showLocationDetails = false
 
     //filter keywords for home page
     private let natureKeywords = [
@@ -65,12 +70,37 @@ struct MainHomeView: View {
                                 LocationCardView(location: location)
                             }
                             .buttonStyle(.plain)
+                            //long press opens context menu
+                            .contextMenu {
+                                Button("More Info") {
+                                    selectedLocation = location
+                                    showLocationDetails = true
+                                }
+                                
+                                Button(
+                                    favouriteManager.isFavourite(location) ? "Remove from Wishlist" : "Add to Wishlist"
+                                ) {
+                                    favouriteManager.toggle(location)
+                                }
+                                
+
+                                Button("Directions") {
+                                    openDirections(for: location)
+                                }
+                            }
                         }
                     }
                 }
                 .padding(.top, 20)
             }
             .background(Color(.systemGroupedBackground))
+            // use the selected location after pressing more info in context menu
+            .navigationDestination(isPresented: $showLocationDetails) {
+                if let selectedLocation {
+                    LocationDetailView(location:selectedLocation)
+                        .environmentObject(favouriteManager)
+                }
+            }
         }
         .task {
             locations = CSVLoader.loadLocations()
@@ -102,6 +132,20 @@ struct MainHomeView: View {
         .background(Color.white)
         .cornerRadius(22)
         .padding(.horizontal)
+    }
+
+    /////https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html
+    //open apple maps with the coordinates in the csv
+    private func openDirections(for location: GreenLocation){
+        let name = location.title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+            //build maps url with lat and long
+        guard let url = URL(
+            string: "http://maps.apple.com/?ll=\(location.latitude),\(location.longitude)&q=\(name)"
+        ) else{
+            return
+        }
+
+        openURL(url)
     }
 }
 
